@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Convenience launcher for the TMDB CLI tool.
+#
+# Usage: ./tmdb-app --type <playing|popular|top|upcoming> [options]
+#
+# Compiles the sources on first run (and whenever they change) into ./out,
+# then runs the tool. Requires a JDK 21+ on the PATH.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC="$ROOT/src"
+OUT="$ROOT/out"
+
+mkdir -p "$OUT"
+
+# Recompile only if a source file is newer than the compiled marker.
+if [ ! -f "$OUT/TmdbApp.class" ] || [ -n "$(find "$SRC" -name '*.java' -newer "$OUT/TmdbApp.class" 2>/dev/null)" ]; then
+  javac -d "$OUT" "$SRC"/*.java
+fi
+
+exec java -cp "$OUT" TmdbApp "$@"
