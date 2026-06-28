@@ -2,3 +2,7 @@ out/
 .DS_Store
 .idea/
 *.iml
+
+# Local credentials — never commit
+.env
+*.env

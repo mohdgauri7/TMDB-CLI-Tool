@@ -12,35 +12,45 @@ This is a solution to the
 
 - Fetches data from the TMDB REST API.
 - Four listings: `playing`, `popular`, `top`, `upcoming`.
-- Clear output: rank, title (year), rating, vote count, and overview.
+- Clear output: rank, title (year), rating, vote count, original language, and overview.
 - Robust error handling for invalid input, missing/invalid credentials, network
   failures, and API errors (the TMDB error message is shown).
-- Credentials via environment variable or flag; supports both a v3 API key and a
-  v4 read access token.
+- Credentials via a gitignored `.env` file, environment variables, or flags;
+  supports both a v3 API key and a v4 read access token.
 
 ## Requirements
 
 - A JDK 21+ on your `PATH` (`javac` / `java`).
-- A TMDB API key (free). Create an account and request a key at
-  <https://www.themoviedb.org/settings/api>.
+- TMDB credentials (free) — a v3 API key or a v4 read access token. See
+  [Setup](#setup) below.
 
 ## Setup
 
-Provide your TMDB credentials in one of these ways (checked in this order):
+You need TMDB credentials (free). Create an account and grab them at
+<https://www.themoviedb.org/settings/api> — either a **v3 API key** or a
+**v4 read access token** (the token is preferred and sent as a Bearer header).
+Provide them in whichever way is most convenient:
 
-```bash
-# v4 read access token (recommended)
-export TMDB_API_TOKEN="your_v4_read_access_token"
+- **`.env` file (easiest):** create a `.env` in this directory; the launcher
+  auto-loads it on every run. It's gitignored, so the key is never committed.
 
-# or v3 API key
-export TMDB_API_KEY="your_v3_api_key"
-```
+  ```dotenv
+  TMDB_API_TOKEN="your_v4_read_access_token"
+  TMDB_API_KEY="your_v3_api_key"
+  ```
 
-You can also pass them per-run with `--token` or `--api-key`.
+- **Environment variables:** `export TMDB_API_TOKEN=...` and/or `export TMDB_API_KEY=...`
+
+- **Per-run flags:** `--token <token>` and/or `--api-key <key>`
+
+Precedence: command-line flags override the `.env` file, which overrides any
+pre-existing environment variables. When both a token and a key are available,
+the v4 token is used.
 
 ## Install / Run
 
-From this directory, use the launcher (compiles on first run / on change):
+From this directory, use the launcher (compiles on first run / on change, and
+auto-loads `.env`). Once your credentials are set up, just run:
 
 ```bash
 ./tmdb-app --type popular
@@ -52,6 +62,9 @@ You can also compile and run manually:
 javac -d out src/*.java
 java -cp out TmdbApp --type popular
 ```
+
+> Running `java` directly skips the launcher, so it won't auto-load `.env` —
+> export the environment variables or pass `--token` / `--api-key` yourself.
 
 ## Usage
 
@@ -85,12 +98,15 @@ tmdb-app --type top --page 2
 ```
 Popular movies:
 
-1. Some Movie Title (2024)   ★ 8.3 (1,234 votes)
+1. Some Movie Title (2024)   ★ 8.3 (1,234 votes)  ·  EN
    A short overview of the movie, truncated if it gets too long for the line…
 
-2. Another Movie (2023)   ★ 7.9 (980 votes)
+2. Another Movie (2023)   ★ 7.9 (980 votes)  ·  JA
    (no overview)
 ```
+
+(The trailing `· EN` / `· JA` is the movie's original language; it's omitted
+when TMDB doesn't provide one. Colours are applied in an interactive terminal.)
 
 ## Notes
 
@@ -98,4 +114,6 @@ Popular movies:
   are also accepted.
 - Colours are shown in an interactive terminal and disabled automatically when
   output is piped (or when `NO_COLOR` is set).
-- Your API key is read from the environment or flags and is never written to disk.
+- If you use a `.env` file it stays on your machine and is gitignored, so your
+  key is never committed. Prefer env vars or `--token` / `--api-key` if you'd
+  rather not keep the key in a file at all.
